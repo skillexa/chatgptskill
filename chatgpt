@@ -1,0 +1,35 @@
+from flask import Flask
+from flask_ask import Ask, statement
+import requests
+
+app = Flask(__name__)
+ask = Ask(app, '/')
+
+@app.route('/')
+def index():
+    return "Hola, ChatGPT Skill para Alexa esta perfecta!"
+
+@ask.intent("AskChatGPTIntent")
+def chatgpt(question):
+    # Envía la pregunta a ChatGPT a través de la API de OpenAI
+    response = requests.post(
+        "https://api.openai.com/v1/engines/chatbot/jobs",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": "Bearer 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"
+        },
+        json={
+            "prompt": question,
+            "max_tokens": 100,
+            "temperature": 0.5,
+        }
+    ).json()
+
+    # Extrae la respuesta de ChatGPT
+    answer = response["choices"][0]["text"]
+
+    # Devuelve la respuesta a Alexa
+    return statement(answer)
+
+if __name__ == '__main__':
+    app.run(debug=True)
